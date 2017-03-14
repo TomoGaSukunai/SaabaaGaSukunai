@@ -11,7 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^2.10.2",
-    "koa": "^1.2.4",
-    "koa-static": "^2.1.0"
+    "koa": "^1.1.0",
+    "koa-static": "^1.5.1"
   }
 }
