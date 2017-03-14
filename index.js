@@ -6,3 +6,4 @@ var app = koa();
 app.use(serve("./web"));
 //debugger
 app.listen(8080);
+console.log(8080)
