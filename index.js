@@ -1,3 +1,4 @@
+var Promise = require ("bluebird");
 var koa = require('koa');
 var serve = require('koa-static');
 
