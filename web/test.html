@@ -9,9 +9,20 @@
         style.innerHTML = "p{font-size: 40px; }"
         document.body.appendChild(style)
     }
-    var p = document.createElement("p")
-    p.innerHTML = navigator.userAgent
-    document.body.appendChild(p)
 
+    function addTxt(txt){
+        var p = document.createElement("p")
+        p.innerHTML = txt
+        document.body.appendChild(p)
+    }
+    addTxt(navigator.userAgent)
+
+    try{
+        canvas = document.createElement("canvas")
+        ctx = canvas.getContext("2d")
+                
+    }catch(err){
+        addTxt(err)
+    }   
     </script>
 </html>
