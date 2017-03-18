@@ -1,0 +1,17 @@
+<html>
+    <body>
+
+    </body>
+    <script>
+        
+    if (navigator.userAgent.indexOf("Android") > -1){
+        var style = document.createElement("style")
+        style.innerHTML = "p{font-size: 40px; }"
+        document.body.appendChild(style)
+    }
+    var p = document.createElement("p")
+    p.innerHTML = navigator.userAgent
+    document.body.appendChild(p)
+
+    </script>
+</html>
