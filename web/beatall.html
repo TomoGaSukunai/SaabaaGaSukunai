@@ -24,31 +24,23 @@
         var canvas = document.getElementById("gaming")
         var ctx = canvas.getContext("2d")
 
-        class Layer{
-            constructor(x,y,w,h){
-                this.offset = {
-                    x: x,
-                    y: y,
-                }
-                this.size = {
-                    w: w,
-                    h: h,
-                }
-
-                this.canvas = document.createElement("canvas")
-                this.canvas.width = w
-                this.canvas.height = h
-                this.ctx = this.canvas.getContext("2d")
-            }   
-            render (){
-
+        function Layer(x,y,w,h){            
+            this.offset = {
+                x: x,
+                y: y,
             }
+            this.size = {
+                w: w,
+                h: h,
+            }
+            this.canvas = document.createElement("canvas")
+            this.canvas.width = w
+            this.canvas.height = h
+            this.ctx = this.canvas.getContext("2d")        
         }
 
-        class CopyCanvasLayer extends Layer{
-            constructor(canvas){
-                super(0, 0, canvas.width, canvas.height)
-            }
+        function CopyCanvasLayer (canvas){
+            return new Layer(0, 0, canvas.width, canvas.height)            
         }
 
         var manager = {
@@ -74,17 +66,16 @@
         }
 
 
-        class Hole{
-            constructor(x,y){
-                this.x = x 
-                this.y = y
-                this.style = ""
-                this.isPop = false
-                this.isHit = false
-                this.timeStamp = Date.now()
-                this.popY = 70
-            }
-            hit(x,y){
+        function Hole(x,y){
+            this.x = x 
+            this.y = y
+            this.style = ""
+            this.isPop = false
+            this.isHit = false
+            this.timeStamp = Date.now()
+            this.popY = 70
+        
+            this.hit = function(x,y){
                 var ret = x > this.x - 30 && x < this.x + 30 
                         && y < this.y && y > this.y - 200
                 
@@ -97,12 +88,12 @@
                 }
                 return ret
             }
-            pop(){
+            this.pop = function(){
                 this.style = "rgb(128,128,196)"
                 this.timeStamp = Date.now()
                 this.isPop = true
             }
-            update(t){        
+            this.update = function(t){        
                 if (this.isHit){
                     if (t > this.timeStamp + 200){
                         this.popY = 70
@@ -119,7 +110,7 @@
                 }
                 return false        
             }
-            getY(dt){
+            this.getY = function(dt){
                 return x = (dt - 1000)*dt/500/500*70 + 70
             }
         }
