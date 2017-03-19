@@ -21,6 +21,13 @@
         </canvas>        
     </body>
     <script>
+
+        function addTxt(txt){
+            var p = document.createElement("p")
+            p.innerHTML = txt
+            document.body.appendChild(p)
+        }
+                
         var canvas = document.getElementById("gaming")
         var ctx = canvas.getContext("2d")
 
@@ -268,7 +275,7 @@
             clickState.f = true
         }
 
-        addEventListener("click", clickHandler)
+        window.addEventListener("click", clickHandler)
 
         var gameState = 0
         var animation
@@ -349,7 +356,14 @@
         var time = 0
         var popStamp = Date.now()
         var popDelta = 700
-        main()
+
+        
+        try{
+            main()
+        }catch(err){
+            addTxt(err)
+        }
+
     </script>
     
 </html>
