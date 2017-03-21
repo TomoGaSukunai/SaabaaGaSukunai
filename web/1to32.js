@@ -1,5 +1,13 @@
+function addTxt(txt){
+    var p = document.createElement("p")
+    p.innerHTML = txt
+    document.body.appendChild(p)
+}
+addTxt("line 6")
+
 var canvas = document.getElementById("gaming")
 var ctx = canvas.getContext("2d")
+
 
 //divide screen 
 var timeArea = {
@@ -38,7 +46,6 @@ var buttonArea = {
     font: "24px  Arial",
     style: "rgba(128,196,128,0.5)"
 }
-
 var clickState = {
     f: false,
     x: 0,
@@ -52,11 +59,7 @@ var timeStamp = 0
 var gamePhase = 0
 var animation = null
 var stopFlag = false
-function addTxt(txt){
-    var p = document.createElement("p")
-    p.innerHTML = txt
-    document.body.appendChild(p)
-}
+
 addTxt("txt added")
 
 
