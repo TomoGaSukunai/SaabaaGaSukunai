@@ -20,7 +20,6 @@ var boxArea = {
     w: 480,
     h: 480
 }
-
 var dialogArea = {
     x: 120,
     y: 60,
@@ -30,7 +29,6 @@ var dialogArea = {
     font: "80px Arial",
     style: "rgba(128,128,128,0.5)"
 }
-
 var buttonArea = {
     x: dialogArea.w/6 + dialogArea.x,
     y: dialogArea.h/8*6 + dialogArea.y,
@@ -39,6 +37,91 @@ var buttonArea = {
     text: "START",
     font: "24px  Arial",
     style: "rgba(128,196,128,0.5)"
+}
+
+var clickState = {
+    f: false,
+    x: 0,
+    y: 0
+}
+
+var fills_fore = []
+var fills_back = []
+var aimNumber = 0
+var timeStamp = 0
+var gamePhase = 0
+var animation = null
+var stopFlag = false
+function addTxt(txt){
+    var p = document.createElement("p")
+    p.innerHTML = txt
+    document.body.appendChild(p)
+}
+addTxt("txt added")
+
+
+function main(){
+    animation = requestAnimationFrame(main)
+    stopFlag && cancelAnimationFrame(animation)
+    //handler click 
+
+    if (gamePhase == 0){
+        clearArea(ctx, dialogArea)
+        drawDialog(ctx, dialogArea)
+        drawDialog(ctx, buttonArea)
+        if (clickState.f){
+            var xx = clickState.x 
+            var yy = clickState.y
+
+            if (xx > buttonArea.x && xx < buttonArea.x + buttonArea.w
+            && yy > buttonArea.y && yy < buttonArea.y + buttonArea.h){
+                clearArea(ctx, dialogArea)
+                gameInit()                
+            }
+        }
+    }else if (gamePhase == 1){
+        if (clickState.f){
+            var xx = Math.floor((clickState.x - boxArea.x)/boxArea.w *4)
+            var yy = Math.floor((clickState.y - boxArea.y)/boxArea.h *4)        
+            var ii = xx * 4 + yy
+            if (fills_fore[ii] === aimNumber+1 ){
+                aimNumber ++ 
+                fills_fore[ii] = fills_back[ii]
+                fills_back[ii] = 0
+                //console.log(fills_fore[ii])
+                clearArea(ctx, boxArea)
+                draw25Boxes(fills_fore, ctx, boxArea)
+            }
+            //console.log(fills_fore[ii])
+        }
+        if (gamePhase == 1){
+            clearArea(ctx, timeArea)
+            drawTimer(ctx, timeArea)
+            clearArea(ctx, numberArea)
+            drawNum(ctx, numberArea, aimNumber)
+        }
+        if (aimNumber === 32){
+            dialogArea.text = "your time : "+(((Date.now() - timeStamp)/1000).toFixed(2))
+            buttonArea.text = "RESTART"
+            gamePhase = 0
+        }        
+    }
+    clickState.f = false
+}
+
+function clickHandler(e){
+    clickState.f = true    
+    clickState.x = e.x / canvas.clientWidth * canvas.width
+    clickState.y = e.y / canvas.clientHeight * canvas.height
+}
+
+function gameInit(){
+    fills_fore = randomFill()
+    fills_back = randomFill().map(x=>x+16)
+    aimNumber = 0
+    timeStamp = Date.now()
+    gamePhase = 1
+    draw25Boxes(fills_fore, ctx, boxArea)    
 }
 
 function randomFill(){
@@ -108,89 +191,6 @@ function drawTimer(ctx, area){
     ctx.font = area.width/20 + "px Arial"
     ctx.fillStyle = "blue"
     ctx.fillText(time, area.x + area.w/2, area.y+10,area.w)
-}
-
-var clickState = {
-    f: false,
-    x: 0,
-    y: 0
-}
-function clickHandler(e){
-    clickState.f = true    
-    clickState.x = e.x / canvas.clientWidth * canvas.width
-    clickState.y = e.y / canvas.clientHeight * canvas.height
-}
-
-var gamePhase = 0
-var animation = null
-var stopFlag = false
-function main(){
-    animation = requestAnimationFrame(main)
-    stopFlag && cancelAnimationFrame(animation)
-    //handler click 
-
-    if (gamePhase == 0){
-        clearArea(ctx, dialogArea)
-        drawDialog(ctx, dialogArea)
-        drawDialog(ctx, buttonArea)
-        if (clickState.f){
-            var xx = clickState.x 
-            var yy = clickState.y
-
-            if (xx > buttonArea.x && xx < buttonArea.x + buttonArea.w
-            && yy > buttonArea.y && yy < buttonArea.y + buttonArea.h){
-                clearArea(ctx, dialogArea)
-                gameInit()                
-            }
-        }
-    }else if (gamePhase == 1){
-        if (clickState.f){
-            var xx = Math.floor((clickState.x - boxArea.x)/boxArea.w *4)
-            var yy = Math.floor((clickState.y - boxArea.y)/boxArea.h *4)        
-            var ii = xx * 4 + yy
-            if (fills_fore[ii] === aimNumber+1 ){
-                aimNumber ++ 
-                fills_fore[ii] = fills_back[ii]
-                fills_back[ii] = 0
-                //console.log(fills_fore[ii])
-                clearArea(ctx, boxArea)
-                draw25Boxes(fills_fore, ctx, boxArea)
-            }
-            //console.log(fills_fore[ii])
-        }
-        if (gamePhase == 1){
-            clearArea(ctx, timeArea)
-            drawTimer(ctx, timeArea)
-            clearArea(ctx, numberArea)
-            drawNum(ctx, numberArea, aimNumber)
-        }
-        if (aimNumber === 32){
-            dialogArea.text = "your time : "+(((Date.now() - timeStamp)/1000).toFixed(2))
-            buttonArea.text = "RESTART"
-            gamePhase = 0
-        }        
-    }
-    clickState.f = false
-}
-
-var fills_fore = []
-var fills_back = []
-var aimNumber = 0
-var timeStamp = 0
-
-function gameInit(){
-    fills_fore = randomFill()
-    fills_back = randomFill().map(x=>x+16)
-    aimNumber = 0
-    timeStamp = Date.now()
-    gamePhase = 1
-    draw25Boxes(fills_fore, ctx, boxArea)    
-}
-
-function addTxt(txt){
-    var p = document.createElement("p")
-    p.innerHTML = txt
-    document.body.appendChild(p)
 }
 
 try{
