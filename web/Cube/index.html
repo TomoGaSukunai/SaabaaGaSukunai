@@ -1,0 +1,75 @@
+<meta charset="utf-8">
+<html>    
+    <body>
+        <canvas id="myCanvas"></canvas>
+        <div id="info">Test</div>
+        <div id="bhelp">
+            <span class="ctrl">QWERTY ASDFGH</span> to rotate  <br />
+            <span class="ctrl">Arrows</span> to move view <br />
+            <span class="ctrl">Space</span> cast a recover </div>
+    </body>
+    <style>
+        span.ctrl
+        {
+            color: saddlebrown;            
+        }
+        body, #myCanvas
+        {
+            display: block;
+            padding: 0px;
+            margin: 0px;
+        }
+        #myCanvas
+        {
+            width: 100%;
+            height: 100%;
+        }
+        #info
+        {   
+            display: none;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0; 
+            margin: auto;
+            height: 30%;
+            width: 40%;
+            background: white;
+            text-align: center;
+            text-transform: uppercase
+        }
+        #bhelp
+        {   
+            display: block;
+            position: absolute;
+            top: 1%; left: 1%;
+            margin: auto;
+            height: auto;
+            width: 20%;
+            background: white;
+            text-align: center;
+        }
+    </style>
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec3 vColor;
+        void main(void) {
+            gl_FragColor = vec4(vColor,1.0);
+            //vec4(0.1, 0.0, 0.0, 0.1);
+        }
+    </script>
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 coordinates;
+        uniform mat4 Pmatrix;
+        uniform mat4 Vmatrix;
+        uniform mat4 Mmatrix;
+        uniform mat4 Lmatrix;
+        attribute vec3 color;
+        varying vec3 vColor;
+        void main(void){
+            gl_Position = Pmatrix*Vmatrix*Mmatrix*Lmatrix*vec4(coordinates, 1.0);
+            gl_PointSize = 10.0;
+            vColor = color;
+        }
+    </script>
+    <script src="cube-data.js"></script>
+    <script src="main.js"></script>
+</html>
