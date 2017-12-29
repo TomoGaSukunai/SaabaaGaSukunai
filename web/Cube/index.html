@@ -1,17 +1,21 @@
 <meta charset="utf-8">
-<html>    
+<html>
     <body>
         <canvas id="myCanvas"></canvas>
         <div id="info">Test</div>
         <div id="bhelp">
             <span class="ctrl">QWERTY ASDFGH</span> to rotate  <br />
             <span class="ctrl">Arrows</span> to move view <br />
-            <span class="ctrl">Space</span> cast a recover </div>
+            <span class="ctrl">Space</span> cast a recover <br />
+        </div>
+        <div id="vkeys">
+
+        </div>
     </body>
     <style>
         span.ctrl
         {
-            color: saddlebrown;            
+            color: saddlebrown;
         }
         body, #myCanvas
         {
@@ -25,10 +29,10 @@
             height: 100%;
         }
         #info
-        {   
+        {
             display: none;
             position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0; 
+            top: 0; left: 0; bottom: 0; right: 0;
             margin: auto;
             height: 30%;
             width: 40%;
@@ -37,7 +41,7 @@
             text-transform: uppercase
         }
         #bhelp
-        {   
+        {
             display: block;
             position: absolute;
             top: 1%; left: 1%;
@@ -47,7 +51,61 @@
             background: white;
             text-align: center;
         }
+        #vkeys
+        {
+            display: block;
+            position: absolute;
+            bottom: 1%;
+            align-self: center;
+            margin: auto;
+            height: 20%;
+            width: 100%;
+            background: black;
+            text-align: center;
+
+        }
+        .vkey, .vkey2
+        {
+            background: gray;
+            color: white;
+            font-size: 100%;
+            height: 30%;
+
+        }
+        .vkey
+        {
+            width: 10%;
+        }
+        .vkey2
+        {
+            width: 60%;
+        }
     </style>
+    <script id="shader-fs2" type="x-shader/x-fragment">
+        precision mediump float;
+        varying vec2 vTexureCoord;
+
+        uniform sampler2D uSampler;
+        void main(void) {
+            gl_FragColor = texture2D(uSampler, vTextureCoord);
+        }
+    </script>
+    <script id="shader-vs2" type="x-shader/x-vertex">
+        attribute vec3 coordinates;
+        uniform mat4 Pmatrix;
+        uniform mat4 Vmatrix;
+        uniform mat4 Mmatrix;
+        uniform mat4 Lmatrix;
+        attribute vec2 uv;
+
+        varying vec2 vTexureCoord;
+
+        void main(void){
+            gl_Position = Pmatrix*Vmatrix*Mmatrix*Lmatrix*vec4(coordinates, 1.0);
+            //gl_PointSize = 10.0;
+            vTexureCoord = uv;
+        }
+    </script>
     <script id="shader-fs" type="x-shader/x-fragment">
         precision mediump float;
         varying vec3 vColor;

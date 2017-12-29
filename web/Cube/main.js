@@ -373,6 +373,35 @@ function main() {
         //console.log(e)
     })
 
+    var vkeys = document.querySelector("#vkeys")
+    var QWERTY = "QWERTY ASDFGH "
+    for (var i = 0; i < QWERTY.length; i++) {
+        var k = QWERTY[i]
+        if (k !== " ") {
+            var but = document.createElement("button")
+            but.className = "vkey"
+            but.innerHTML = k
+            but.onclick = function () {
+                var x = k
+                return function () {
+                    keyState.f = true
+                    keyState.code = x
+                }
+            }()
+            vkeys.appendChild(but)
+        } else {
+            var br = document.createElement("br")
+            vkeys.appendChild(br)
+        }
+    }
+    var space = document.createElement("button")
+    space.className = "vkey2"
+    space.innerHTML = "Space"
+    space.onclick = function () {
+        keyState.f = true
+        keyState.code = " "
+    }
+    vkeys.appendChild(space)
     draw()
 }
 

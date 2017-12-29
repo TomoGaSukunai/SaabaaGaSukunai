@@ -1,5 +1,6 @@
 node_modules
 web/pic
+web/test
 web/pic.html
 web/webgl-lessons-master
 .vscode
