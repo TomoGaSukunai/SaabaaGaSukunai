@@ -11,6 +11,7 @@
         <div id="vkeys">
 
         </div>
+        <img src="./senpai.jpg" id="tex-senpai" style="display:none"/>
     </body>
     <style>
         span.ctrl
@@ -83,7 +84,7 @@
     </style>
     <script id="shader-fs2" type="x-shader/x-fragment">
         precision mediump float;
-        varying vec2 vTexureCoord;
+        varying vec2 vTextureCoord;
 
         uniform sampler2D uSampler;
         void main(void) {
@@ -96,14 +97,12 @@
         uniform mat4 Vmatrix;
         uniform mat4 Mmatrix;
         uniform mat4 Lmatrix;
-        attribute vec2 uv;
-
-        varying vec2 vTexureCoord;
+        attribute vec2 uvs;
+        varying vec2 vTextureCoord;
 
         void main(void){
             gl_Position = Pmatrix*Vmatrix*Mmatrix*Lmatrix*vec4(coordinates, 1.0);
-            //gl_PointSize = 10.0;
-            vTexureCoord = uv;
+            vTextureCoord = uvs;
         }
     </script>
     <script id="shader-fs" type="x-shader/x-fragment">

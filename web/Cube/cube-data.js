@@ -1,6 +1,6 @@
 var CubeData = function(){
     return {
-        getBytes(code){                
+        getBytes(code){
             let r1 = code % 40320
             let r2 = Math.floor(code / 40320)
             let t = 40320
@@ -25,7 +25,7 @@ var CubeData = function(){
         },
         getCode(bytes){
             let r1 = 0
-            let r2 = 0        
+            let r2 = 0
             for(let i=0; i<8; i++){
                 let t = bytes[i]
                 for(let j=0; j<i; j++){

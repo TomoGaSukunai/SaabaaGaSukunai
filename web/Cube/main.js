@@ -36,17 +36,22 @@ function initGL(canvas) {
 }
 
 function createBlocks(CubeData) {
+    var senpaiFace = 5
     var Blocks = []
     for (var i in CubeData.vertices_f) {
+        //color part
         var vertices = []
         var colors = []
         var indices = []
+        //tex part
+        var vertices2 = []
+        var uvs = []
+        var indices2 = []
+
         var v0 = CubeData.vertices[i]
         //create 3 outer faces
         for (var j = 0; j < 3; j++) {
-            //
-            indices.push(CubeData.quad_indices.map(k => k + vertices.length))
-            //
+
             var face = CubeData.faces[CubeData.vertices_f[i][j]]
             var face_prev = CubeData.faces[CubeData.vertices_f[i][(j + 2) % 3]]
             var face_next = CubeData.faces[CubeData.vertices_f[i][(j + 1) % 3]]
@@ -54,7 +59,18 @@ function createBlocks(CubeData) {
             vertices.push(face.map((x, k) => x + face_prev[k]))
             vertices.push(face)
             vertices.push(face.map((x, k) => x + face_next[k]))
-            //with color of face
+
+            if (CubeData.vertices_f[i][j] === senpaiFace){
+
+                var xyz = face.indexOf(face.reduce((a,b)=>a+b))
+                indices2.push(CubeData.quad_indices.map(k => k + vertices2.length))
+                vertices2.push(...vertices.slice(-4))
+                uvs.push(... (vertices2.slice(-4).map(x=>x.slice(0,xyz).concat(x.slice(xyz+1)))))
+
+            }else{
+                //with color of face
+                indices.push(CubeData.quad_indices.map(k => k + vertices.length - 4))
+            }
             var c = CubeData.faces_color[CubeData.vertices_f[i][j]]
             colors.push(c, c, c, c)
         }
@@ -68,22 +84,27 @@ function createBlocks(CubeData) {
             vertices.push(vertices[4 * j + 2])
         }
         //
+
         var c = [0.9, 0.9, 0.9]
         colors.push(c, c, c, c, c, c, c)
 
         //move block a bit away from origin point
         vertices = vertices.map(v => v.map((k, i) => k + v0[i] * 0.1))
-
+        vertices2 = vertices2.map(v => v.map((k, i) => k + v0[i] * 0.1))
         //
         vertices = vertices.reduce((a, b) => [...a, ...b])
         indices = indices.reduce((a, b) => [...a, ...b])
         colors = colors.reduce((a, b) => [...a, ...b])
-
-        var Block = { vertices, indices, colors }
+        vertices2 = vertices2.reduce((a, b) => [...a, ...b],[])
+        indices2 = indices2.reduce((a, b) => [...a, ...b],[])
+        uvs = uvs.reduce((a,b)=>[...a,...b],[])
+        uvs = uvs.map(x=>(1 - x)/2)
+        var Block = { vertices, indices, colors , vertices2, indices2 , uvs }
         Block.idx = parseInt(i)
-
+        //console.log(uvs)
         Blocks.push(Block)
     }
+
     return Blocks
 }
 
@@ -108,7 +129,43 @@ function bufferInit(Obj, gl = gl) {
     Obj.vertex_buffer = vertex_buffer
     Obj.color_buffer = color_buffer
     Obj.index_buffer = index_buffer
+
+
+    var vertex_buffer2 = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer2)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Obj.vertices2), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+    var uv_buffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, uv_buffer)
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(Obj.uvs), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ARRAY_BUFFER, null)
+
+    var index_buffer2 = gl.createBuffer()
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, index_buffer2)
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(Obj.indices2), gl.STATIC_DRAW)
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null)
+
+    Obj.vertex_buffer2 = vertex_buffer2
+    Obj.uv_buffer = uv_buffer
+    Obj.index_buffer2 = index_buffer2
 }
+
+function textureInit(img){
+
+    img.onload = function(){
+        var tex = gl.createTexture()
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, tex)
+
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST)
+        gl.generateMipmap(gl.TEXTURE_2D)
+        console.log("texture ready")
+    }
+}
+
 
 function shaderInit(vertSource, fragSource, gl = gl) {
     var vertShader = gl.createShader(gl.VERTEX_SHADER)
@@ -171,16 +228,10 @@ function draw() {
     var now = Date.now()
     var dt = now - timeStamp
     timeStamp = now
-    gl.uniformMatrix4fv(Pmatrix, false, project_matrix)
-    gl.uniformMatrix4fv(Vmatrix, false, view_matrix)
 
     //rotateY(move_matrix, 0.01*60/1000*dt)
     rotateY(move_matrix, rY)
     rotateX(move_matrix, rX)
-
-    gl.uniformMatrix4fv(Mmatrix, false, move_matrix)
-
-    move_matrix = getEye()
 
     if (!keyState.lock && keyState.f) {
         var bool = true
@@ -255,8 +306,15 @@ function draw() {
         keyState.lock = false
     }
 
+    //color part
+    gl.useProgram(shaderProgram)
+    gl.uniformMatrix4fv(Pmatrix, false, project_matrix)
+    gl.uniformMatrix4fv(Vmatrix, false, view_matrix)
+    gl.uniformMatrix4fv(Mmatrix, false, move_matrix)
+
+
     for (var idx in Blocks) {
-        //if (idx == 0 ) continue
+
         var Block = Blocks[idx]
 
         gl.uniformMatrix4fv(Lmatrix, false, Block.move_matrix)
@@ -270,7 +328,36 @@ function draw() {
         gl.vertexAttribPointer(color, 3, gl.FLOAT, false, 0, 0)
 
         gl.drawElements(gl.TRIANGLES, Block.indices.length, gl.UNSIGNED_SHORT, 0)
+
+
     }
+    //texture part
+    gl.useProgram(shaderProgram2)
+    gl.uniformMatrix4fv(Pmatrix2, false, project_matrix)
+    gl.uniformMatrix4fv(Vmatrix2, false, view_matrix)
+    gl.uniformMatrix4fv(Mmatrix2, false, move_matrix)
+
+
+    for (var idx in Blocks) {
+
+        var Block = Blocks[idx]
+
+        gl.uniformMatrix4fv(Lmatrix2, false, Block.move_matrix)
+
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Block.index_buffer2)
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, Block.vertex_buffer2)
+        gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0)
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, Block.uv_buffer)
+        gl.vertexAttribPointer(texture, 2, gl.FLOAT, false, 0, 0)
+
+        gl.uniform1i(sampler, 0)
+
+        gl.drawElements(gl.TRIANGLES, Block.indices2.length, gl.UNSIGNED_SHORT, 0)
+    }
+
+    move_matrix = getEye()
 
     requestAnimationFrame(draw)
 }
@@ -329,6 +416,9 @@ var view_matrix = getEye()
 view_matrix[14] = view_matrix[14] - 6
 var move_matrix = getEye()
 
+
+var shaderProgram
+
 var coord
 var color
 
@@ -337,12 +427,25 @@ var Vmatrix
 var Mmatrix
 var Lmatrix
 
+var shaderProgram2
+var coord2
+var texture
+
+var Pmatrix2
+var Vmatrix2
+var Mmatrix2
+var Lmatrix2
+
 var timeStamp = Date.now()
 var rY = -0.5
 var rX = 0.5
 var animation_que = []
 var cubeStatus = CubeData.getBytes(0)
 var keyState = { f: false, lock: false }
+
+
+
+
 
 function main() {
     var gl = initGL(myCanvas)
@@ -352,9 +455,11 @@ function main() {
         bufferInit(Block, gl)
     }
 
+    textureInit(document.getElementById("tex-senpai"))
+
     var vertSource = document.getElementById("shader-vs").text
     var fragSource = document.getElementById("shader-fs").text
-    var shaderProgram = shaderInit(vertSource, fragSource, gl)
+    shaderProgram = shaderInit(vertSource, fragSource, gl)
 
     coord = gl.getAttribLocation(shaderProgram, "coordinates")
     gl.enableVertexAttribArray(coord)
@@ -366,6 +471,23 @@ function main() {
     Vmatrix = gl.getUniformLocation(shaderProgram, "Vmatrix")
     Mmatrix = gl.getUniformLocation(shaderProgram, "Mmatrix")
     Lmatrix = gl.getUniformLocation(shaderProgram, "Lmatrix")
+
+    var vertSource2 = document.getElementById("shader-vs2").text
+    var fragSource2 = document.getElementById("shader-fs2").text
+    shaderProgram2 = shaderInit(vertSource2, fragSource2, gl)
+
+    coord2 = gl.getAttribLocation(shaderProgram2, "coordinates")
+    gl.enableVertexAttribArray(coord2)
+
+    texture = gl.getAttribLocation(shaderProgram2, "uvs")
+    gl.enableVertexAttribArray(texture)
+
+    Pmatrix2 = gl.getUniformLocation(shaderProgram2, "Pmatrix")
+    Vmatrix2 = gl.getUniformLocation(shaderProgram2, "Vmatrix")
+    Mmatrix2 = gl.getUniformLocation(shaderProgram2, "Mmatrix")
+    Lmatrix2 = gl.getUniformLocation(shaderProgram2, "Lmatrix")
+
+    sampler = gl.getUniformLocation(shaderProgram2,"uSampler")
 
     window.addEventListener("keydown", function (e) {
         keyState.f = true
@@ -417,7 +539,7 @@ function xhrTest() {
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")
     xhr.send("code=" + CubeData.getCode(cubeStatus))
     info.style.display = "block"
-    info.innerHTML = "Reciving slove..."
+    info.innerHTML = "Recieving solution..."
     xhr.onreadystatechange = function () {
         if (xhr.readyState == 4 && xhr.status == 200) {
             info.style.display = "none"
