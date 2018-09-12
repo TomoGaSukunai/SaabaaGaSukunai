@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>YWWUYI Live - Online Users : ?</title>
+  <link class="dplayer-css" rel="stylesheet" href="http://cuplive.eve.moe/DPlayer.min.css">
+</head>
+<body>
+	  <div style="position: fixed; right: 0.5%; color: rgba(255, 255, 0, 0.9); font-weight: bold; z-index: 100001; top: 0.5%; font-size: 14pt; transition: opacity .5s, color .35s; transition-timing-function: ease-in-out;" id="online-users-1">Online : ?</div>
+	  <div style="position: fixed; right: 0.5%; color: rgba(255, 255, 0, 0.9); font-weight: bold; z-index: 100001; top: 0.5%; font-size: 14pt; transition: opacity .5s, color .35s; transition-timing-function: ease-in-out; opacity: 0;" id="online-users-2">Online : ?</div>
+	  <div id="player"></div>
+
+<script src="http://cuplive.eve.moe/hls.min.js"></script>
+<script src="http://cuplive.eve.moe/DPlayer.min.js"></script>
+
+<script type="application/javascript">
+  function createApiBackend (url, onMessage) {
+    var ws;
+    var connect = function () {
+      ws = new WebSocket(url);
+      ws.onmessage = function (event) {
+        onMessage(JSON.parse(event.data));
+      };
+      ws.onclose = function () {
+        // Try to reconnect in 5 seconds
+        setTimeout(connect, 2000);
+      };
+    };
+    var connected = false;
+    window.addEventListener('beforeunload', function () {
+      ws.onclose = null;
+      ws.close();
+    });
+    return {
+      read: function (endpoint, callback) {
+        if (connected) {
+          return;
+        }
+        connected = true;
+        connect();
+        callback();
+      },
+      send: function (endpoint, data, callback) {
+        ws.send(JSON.stringify(data));
+        callback();
+      }
+    };
+  }
+  var dp = new DPlayer({
+    container: document.getElementById('player'),
+    live: true,
+    autoplay: true,
+    danmaku: true,
+    apiBackend: createApiBackend('ws://ywwuyifans.eve.moe/danmaku.socket', function (dan) {
+	  dan.color = 'rgba(255, 255, 255, 1)';
+      dp.danmaku.draw(dan);
+    }),
+    video: {
+      url: 'https://p-events-delivery.akamaized.net/189kljhbasdcvjhasbdscvoahsbdcvaoshdbvaosdhbvasodhjbv/m3u8/hls_mvp.m3u8',
+      type: 'hls'
+    },
+  });
+  dp.danmaku.opacity(1.0);
+  dp.fullScreen.request('web');
+</script>
+
+</body>
+</html>
