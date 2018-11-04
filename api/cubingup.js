@@ -111,6 +111,20 @@ for (let level = 0; level < ques.length; level++) {
         distribution[getZCode(node)] = trans
     }
 }
+
+
+// r2s from que
+const r2s = new Uint16Array(Math.pow(3, 7))
+for (const que of ques){
+    for (const code of que) {
+        const r2 = Math.floor(code / 40320)
+        const r2z = Math.floor(r2 / 3)
+        if (!r2s[r2z]) {
+            r2s[r2z] = r2
+        }
+    }
+}
+fs.writeFileSync(__dirname + '/r2s.data', r2s, "binary")
 ques = null
 
 
@@ -131,16 +145,6 @@ for (let i = 0; i < nn; i++) {
 
 fs.writeFileSync(__dirname + '/zipped.data', zipped, "binary")
 
-// r2s from que
-const r2s = new Uint16Array(Math.pow(3, 7))
-for (const code of ques) {
-    const r2 = Math.floor(code / 40320)
-    const r2z = Math.floor(r2 / 3)
-    if (!r2s[r2z]) {
-        r2s[r2z] = r2
-    }
-}
-fs.writeFileSync(__dirname + '/r2s.data', r2s, "binary")
 
 
 
