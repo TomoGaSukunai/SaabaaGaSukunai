@@ -124,7 +124,7 @@ for (const que of ques){
         }
     }
 }
-fs.writeFileSync(__dirname + '/r2s.data', r2s, "binary")
+fs.writeFileSync(__dirname + '/r2s.data', Buffer.from(r2s.buffer), "binary")
 ques = null
 
 
